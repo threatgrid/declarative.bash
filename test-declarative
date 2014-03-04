@@ -1,0 +1,83 @@
+#!/bin/bash
+
+source declarative.bash
+
+provides simple_provider_A simple_var_A
+simple_provider_A() {
+    declare -g simple_var_A
+    simple_var_A="world"
+}
+
+provides simple_provider_B simple_var_B
+simple_provider_B() {
+    declare -g simple_var_B
+    needs simple_var_A
+
+    simple_var_B="goodbye, cruel $simple_var_A"
+}
+
+provides simple_test test
+simple_test() {
+    needs simple_var_B
+    [[ $simple_var_B = "goodbye, cruel world" ]] || {
+        echo "ERROR: Simple functionality not working" >&2
+        exit 1
+    }
+}
+
+provides loop_A lA
+loop_A() {
+    declare -g lA
+    if [[ $lA ]]; then
+        (( ++lA ))
+    else
+        lA=1
+    fi
+    if (( lA >= 3 )); then
+        echo "FAILED: Loops not prevented" >&2
+        exit 1
+    fi
+    needs lA
+}
+
+provides loop_test test
+loop_test() {
+    needs lA
+}
+
+provides leaky_func leaky
+leaky_func() {
+    undeclared_variable=value
+}
+
+provides leak_test test leaks_detected
+leak_test() {
+    local default_defn=$(declare -f _declarative_leak_detected)
+
+    _declarative_leak_detected() {
+        declare -g -A leaks_detected
+        : leaks_detected "$1" "$2"
+        leaks_detected[$1]+="$2 "
+    }
+    DECLARATIVE_TEST_LEAKS=1
+    needs leaky
+
+    [[ ${leaks_detected[leaky_func]% } = "undeclared_variable" ]] || {
+        echo "ERROR: Expected leaky function to have 'undeclared_variable' detected; found:"
+        echo "       ${leaks_detected[leaky_func]% }" >&2
+        exit 1
+    }
+
+    # restore old state
+    unset DECLARATIVE_TEST_LEAKS
+    eval "$default_defn"
+}
+
+main() {
+    # we need all tests; run them in order.
+    needs test
+    echo "SUCCESS"
+}
+
+# kick things off
+main
