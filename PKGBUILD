@@ -1,5 +1,5 @@
 pkgname=declarative.bash
-pkgver=0.0.1
+pkgver=0.0.2
 pkgrel=1
 pkgdesc="A simple library for declarative shell scripts"
 license=( BSD )
