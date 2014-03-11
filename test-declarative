@@ -1,6 +1,23 @@
 #!/bin/bash
 
-source declarative.bash
+# normally just ''source declarative.bash'', but here we want to be sure to
+# test the current version
+source ./declarative.bash
+
+is_one_word() {
+    local varname value
+    varname=$1; value=${!varname}
+    [[ $varname && $varname != *[[:space:]]* ]]
+}
+
+is_multiple_words() {
+    local varname value
+    varname=$1; value=${!varname}
+    [[ $value && $value = *[[:space:]]* ]]
+}
+
+assert_var simple_var_A is_one_word
+assert_var simple_var_B is_multiple_words
 
 provides simple_provider_A simple_var_A
 simple_provider_A() {
