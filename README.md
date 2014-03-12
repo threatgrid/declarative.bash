@@ -28,10 +28,15 @@ Break your script down into small functions. Before each function, use a `provid
 
     source declarative.bash              # load the library
 
-    provides function_name varA varB     # declare variables we set
+    is_not_empty() { [[ ${!1} ]]; }      # define any assertions
+
+    declare_assertions varA varB -- is_not_empty # declare which variables your
+                                                 # ...assertions apply to.
+
+    provides function_name varA varB     # declare variables each function sets
     function_name() {
-      declare -g varA varB               # define variables we set as globals
-      needs varC varD                    # declare variables we consume
+      declare -g varA varB               # ..declare those as globals
+      needs varC varD                    # ..and declare which variables you consume
       # ... put your logic here ...
     }
 
@@ -44,6 +49,8 @@ Some points to note:
 - Loops are silently broken. If `A->B->C->A`, the `C->A` link will be discarded.
 
 - If `DECLARATIVE_TEST_LEAKS` is set, any variables leaked into global scope by functions invoked via `needs` will be detected and reported. This is important, as all variables are global in bash unless explicitly declared otherwise; `local` or `declare` (without `-g`) must be used to prevent this behavior).
+
+- If you make assertions about variables, these assertions will be checked after each function which declares that it writes to those variables. Be aware of the caveat this implies -- if multiple functions are used to build up a single variable, assertions will be enforced after each of them.
 
 Requirements
 ============

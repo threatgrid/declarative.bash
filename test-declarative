@@ -16,8 +16,8 @@ is_multiple_words() {
     [[ $value && $value = *[[:space:]]* ]]
 }
 
-assert_var simple_var_A is_one_word
-assert_var simple_var_B is_multiple_words
+declare_assertions simple_var_A -- is_one_word
+declare_assertions simple_var_B -- is_multiple_words
 
 provides simple_provider_A simple_var_A
 simple_provider_A() {

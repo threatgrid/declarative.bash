@@ -129,13 +129,22 @@ needs() {
     return "$retval"
 }
 
-assert_var() {
-    local var_name=$1 assertion_name=$2
-    local quoted_assertion_name
-    printf -v quoted_assertion_name '%q' "$assertion_name"
-    for assertion_name; do
-        : assertion_name="$assertion_name"
-        _declarative_assertions_for_var[$var_name]+=" $quoted_assertion_name"
+declare_assertions() {
+    local -a vars=()
+    local var_name assertion_name quoted_assertion_name
+    while [[ $1 != -- ]]; do
+        vars+=( "$1" )
+        shift
+    done
+    [[ $1 = -- ]] && shift
+    for var_name in "${vars[@]}"; do
+        for assertion_name; do
+            printf -v quoted_assertion_name '%q' "$assertion_name"
+            for assertion_name; do
+                : assertion_name="$assertion_name"
+                _declarative_assertions_for_var[$var_name]+=" $quoted_assertion_name"
+            done
+        done
     done
 }
 
