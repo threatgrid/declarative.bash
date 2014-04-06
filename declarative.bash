@@ -92,10 +92,10 @@ _declarative_leak_test() {
 }
 
 provides() {
-    local func_name=$1
+    local func_name=$1; shift
     local var_name
     local quoted_func_name
-    printf -v quoted_func_name "$func_name"
+    printf -v quoted_func_name '%q' "$func_name"
 
     for var_name; do
         : "var_name=$var_name"
@@ -149,7 +149,7 @@ declare_assertions() {
 }
 
 provides() {
-    local func_name=$1
+    local func_name=$1; shift
     local var_name
     local quoted_func_name
     printf -v quoted_func_name '%q' "$func_name"
