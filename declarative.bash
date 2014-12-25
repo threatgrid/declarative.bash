@@ -147,17 +147,3 @@ declare_assertions() {
         done
     done
 }
-
-provides() {
-    local func_name=$1; shift
-    local var_name
-    local quoted_func_name
-    printf -v quoted_func_name '%q' "$func_name"
-
-    for var_name; do
-        : "var_name=$var_name"
-        _declarative_providers[$var_name]+=" $quoted_func_name"
-    done
-    printf -v "_declarative_providees[$func_name]" '%q ' "$@"
-}
-
