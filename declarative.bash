@@ -24,6 +24,9 @@ declare -A _declarative_assertions_for_var
 
 declare -A _declarative_leak_test_data
 
+# can't be made local to avoid false positive in bash 4.3.18
+declare -A _declarative_leak_whitelist=( [REPLY]=1 )
+
 # Process ID of the shell owning the _declarative_* data; use from children must be read-only.
 # must be BASHPID, not $$, to correctly detect subshells.
 : "${_DECLARATIVE_PID:=$BASHPID}"
@@ -90,6 +93,7 @@ _declarative_leak_test() {
     for varname in "${!final_vars[@]}"; do
         [[ ${initial_vars[$varname]} ]] && continue
         [[ ${_declarative_providers[$varname]} ]] && continue
+        [[ ${_declarative_leak_whitelist[$varname]} ]] && continue
         [[ $varname = _declarative_leak_* ]] && continue
         _declarative_leak_detected "$1" "$varname"
     done
