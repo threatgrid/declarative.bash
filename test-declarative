@@ -92,6 +92,10 @@ leak_test() {
 
 main() {
     # we need all tests; run them in order.
+    (needs test 2>/dev/null) && {
+        echo "ERROR: Must refuse to satisfy dependencies within subshells" >&2
+        return 1
+    }
     needs test
     echo "SUCCESS"
 }
