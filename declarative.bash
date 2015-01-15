@@ -24,6 +24,11 @@ declare -A _declarative_assertions_for_var
 
 declare -A _declarative_leak_test_data
 
+# Process ID of the shell owning the _declarative_* data; use from children must be read-only.
+# must be BASHPID, not $$, to correctly detect subshells.
+: "${_DECLARATIVE_PID:=$BASHPID}"
+export _DECLARATIVE_PID
+
 # callback; override me to change behavior
 _declarative_leak_detected() {
     echo "ERROR: Leak detected: function $1 leaks definition $2" >&2
@@ -111,6 +116,11 @@ needs() {
     for var_name; do
         : "var_name=$var_name"
         [[ ${_declarative_completed_vars[$var_name]} ]] && continue
+        if ! [[ "$_DECLARATIVE_PID" = "$BASHPID" ]]; then
+            echo "ERROR: Unable to satisfy dependency $var_name in a subshell" >&2
+            echo "       Require this from the parent shell *before* spawning" >&2
+            return 1
+        fi
         _declarative_completed_vars[$var_name]=1
         eval "pending_funcs=( ${_declarative_providers[$var_name]} )"
         for func_name in "${pending_funcs[@]}"; do
