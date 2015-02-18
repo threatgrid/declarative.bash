@@ -137,7 +137,7 @@ needs() {
                 "$func_name"
             fi
             local immediate_retval=$?
-            (( retval |= immediate_retval ))
+            (( retval |= immediate_retval )) ||:
             : var_name="$var_name" func_name="$func_name" immediate_retval="$immediate_retval" retval="$retval" func_stack="${FUNCNAME[*]}"
             _declarative_run_assertions_for_func "$func_name"
         done
